@@ -1,5 +1,10 @@
-FROM maven:latest
-COPY src/ src
-COPY pom.xml .
-RUN mvn compile
-CMD ["mvn", "exec:java"]
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY src/main.py .
+
+CMD ["python", "main.py"]
