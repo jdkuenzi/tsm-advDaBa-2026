@@ -29,8 +29,9 @@ services:
       - JSON_URL=http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl
       - MAX_NODES=1000000
       - NEO4J_IP=172.24.0.10 # must be the same as above
+      - NEO4J_AUTH=neo4j/test # must be the same as above
       - BATCH_SIZE=5000
-      - LOG_INTERVAL=250000
+      - LOG_INTERVAL=200000
       - LOG_LEVEL=INFO
     deploy:
       resources:

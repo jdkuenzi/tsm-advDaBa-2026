@@ -1,9 +1,10 @@
 import logging
 import os
 import time
-import urllib.request
+from itertools import batched
 
 import orjson
+import requests
 from neo4j import GraphDatabase
 
 # ==========================================
@@ -23,9 +24,11 @@ logger = logging.getLogger(__name__)
 # ==========================================
 NEO4J_IP = os.environ.get("NEO4J_IP", "127.0.0.1")
 JSON_URL = os.environ.get("JSON_URL", "http://vmrum.isc.heia-fr.ch/files/test.jsonl")
+NEO4J_AUTH = os.environ.get("NEO4J_AUTH", "neo4j/neo4j")
 MAX_NODES = int(os.environ.get("MAX_NODES", "1000"))
 BATCH_SIZE = int(os.environ.get("BATCH_SIZE", "1000"))
 LOG_INTERVAL = int(os.environ.get("LOG_INTERVAL", "1000"))
+MAX_RETRIES = int(os.environ.get("MAX_RETRIES", "5"))
 
 
 def setup_database(session):
@@ -39,41 +42,80 @@ def setup_database(session):
 
 
 def insert_batch(tx, batch):
-    # 1. Insertion des Articles
-    tx.run(
-        """
-        UNWIND $batch AS article
-        MERGE (a:ARTICLE {_id: article.id})
-        SET a.title = article.title
-        """,
-        batch=batch,
-    )
-
-    # 2. Insertion des Auteurs et relation AUTHORED
-    tx.run(
-        """
-        UNWIND $batch AS article
+    query = """
+    UNWIND $batch AS article
+    MERGE (a:ARTICLE {_id: article.id})
+    SET a.title = article.title
+    
+    WITH a, article
+    CALL {
+        WITH a, article
         UNWIND article.authors AS author
         MERGE (au:AUTHOR {_id: author.id})
         SET au.name = author.name
-        WITH au, article
-        MATCH (a:ARTICLE {_id: article.id})
-        CREATE (au)-[:AUTHORED]->(a)
-        """,
-        batch=batch,
-    )
-
-    # 3. Insertion des relations CITES
-    tx.run(
-        """
-        UNWIND $batch AS article
-        MATCH (a1:ARTICLE {_id: article.id})
+        MERGE (au)-[:AUTHORED]->(a)
+    }
+    
+    WITH a, article
+    CALL {
+        WITH a, article
         UNWIND article.references AS ref
         MERGE (a2:ARTICLE {_id: ref})
-        CREATE (a1)-[:CITES]->(a2)
-        """,
-        batch=batch,
-    )
+        MERGE (a)-[:CITES]->(a2)
+    }
+    """
+    tx.run(query, batch=batch)
+
+
+def wait_for_neo4j(driver):
+    logger.info(f"Connexion à Neo4j sur {NEO4J_IP}...")
+    while True:
+        try:
+            driver.verify_connectivity()
+            logger.info("Connexion établie avec succès !")
+            break
+        except Exception:
+            logger.warning("Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...")
+            time.sleep(5)
+
+
+def stream_articles(url, byte_offset, max_nodes):
+    headers = {"Range": f"bytes={byte_offset}-"} if byte_offset > 0 else {}
+
+    with requests.Session() as session:
+        with session.get(url, headers=headers, stream=True) as response:
+            response.raise_for_status()
+
+            current_byte = byte_offset
+            nodes_yielded = 0
+
+            for line in response.iter_lines():
+                if not line:
+                    current_byte += 1
+                    continue
+
+                current_byte += len(line) + 1
+
+                if nodes_yielded >= max_nodes:
+                    return
+
+                try:
+                    data = orjson.loads(line)
+                    yield (
+                        {
+                            "id": data.get("id"),
+                            "title": data.get("title"),
+                            "authors": data.get("authors", []),
+                            "references": data.get("references", []),
+                        },
+                        current_byte,
+                    )
+
+                    nodes_yielded += 1
+
+                except orjson.JSONDecodeError as e:
+                    logger.warning(f"Erreur de décodage JSON ignorée: {e}")
+                    continue
 
 
 def main():
@@ -84,103 +126,89 @@ def main():
     logger.info(f"BATCH_SIZE : {BATCH_SIZE}")
     logger.info(f"LOG_LEVEL  : {LOG_LEVEL}")
     logger.info(f"LOG_INTERVAL: {LOG_INTERVAL}")
+    logger.info(f"MAX_RETRIES : {MAX_RETRIES}")
     logger.info("===============================================")
-    last_log_count = 0
-    uri = f"bolt://{NEO4J_IP}:7687"
-    driver = GraphDatabase.driver(uri, auth=("neo4j", "test"))
 
-    connected = False
-    logger.info(f"Connexion à Neo4j sur {NEO4J_IP}...")
-    while not connected:
-        try:
-            time.sleep(5)
-            driver.verify_connectivity()
-            connected = True
-            logger.info("Connexion établie avec succès !")
-        except Exception:
-            logger.warning(
-                "Neo4j n'est pas encore prêt. Nouvelle tentative dans 5 secondes..."
-            )
+    neo4j_cred = NEO4J_AUTH.split("/")
+
+    driver = GraphDatabase.driver(
+        f"bolt://{NEO4J_IP}:7687", auth=(neo4j_cred[0], neo4j_cred[1])
+    )
+    wait_for_neo4j(driver)
 
     with driver.session() as session:
         setup_database(session)
 
-    start_time = time.time()
-    end_time = start_time
     nodes_processed = 0
-    batch = []
-    logger.info(f"Limite fixée à {MAX_NODES} articles.")
+    retry_count = 0
+    last_log_count = 0
+    current_byte_offset = 0
+    start_time = time.time()
 
     with driver.session() as session:
-        try:
-            req = urllib.request.Request(JSON_URL)
-            with urllib.request.urlopen(req) as response:
-                start_time = time.time()
-                logger.info(f"Début de l'insertion, streaming depuis : {JSON_URL}")
-                for line_bytes in response:
-                    if nodes_processed >= MAX_NODES:
-                        break
+        logger.info(f"Streaming depuis : {JSON_URL}")
+        start_time = time.time()
+        while retry_count < MAX_RETRIES and nodes_processed < MAX_NODES:
+            try:
+                if nodes_processed > 0:
+                    logger.info(
+                        f"Reprise du flux : on ignore les {nodes_processed} premiers noeuds ({current_byte_offset} bytes)."
+                    )
+                article_stream = stream_articles(
+                    JSON_URL, current_byte_offset, MAX_NODES - nodes_processed
+                )
+                retry_count = 0
+                for batch_tuple in batched(article_stream, BATCH_SIZE):
+                    batch = [item[0] for item in batch_tuple]
 
-                    try:
-                        data = orjson.loads(line_bytes)
-
-                        batch.append(
-                            {
-                                "id": data.get("id"),
-                                "title": data.get("title"),
-                                "authors": data.get("authors", []),
-                                "references": data.get("references", []),
-                            }
-                        )
-
-                    except orjson.JSONDecodeError:
-                        line = line_bytes.decode("utf-8").strip()
-                        logger.warning(
-                            f"Ligne JSON ignorée (malformée) : {line[:50]}..."
-                        )
-                        continue
-
-                    if len(batch) >= BATCH_SIZE:
-                        session.execute_write(insert_batch, batch)
-                        nodes_processed += BATCH_SIZE
-                        if nodes_processed - last_log_count >= LOG_INTERVAL:
-                            logger.info(
-                                f"Progression : {nodes_processed} articles streamés et insérés..."
-                            )
-                            last_log_count = nodes_processed
-
-                        batch = []
-
-                if batch:
-                    nodes_processed += len(batch)
                     session.execute_write(insert_batch, batch)
+                    nodes_processed += len(batch)
+                    current_byte_offset = batch_tuple[-1][1]
 
-            end_time = time.time()
-            elapsed_time = end_time - start_time
+                    if nodes_processed - last_log_count >= LOG_INTERVAL:
+                        logger.info(
+                            f"Progression : {nodes_processed} articles streamés et insérés..."
+                        )
+                        last_log_count = nodes_processed
+                break
 
-        except urllib.error.URLError as e:
-            logger.error(f"Erreur fatale lors de l'accès à l'URL : {e}")
-        finally:
-            logger.info("=============== INSERTION FINIS ===============")
+            except (
+                requests.RequestException,
+                ConnectionError,
+                ConnectionAbortedError,
+            ) as e:
+                logger.warning(f"Coupure réseau détectée : {e}.")
+                if retry_count < MAX_RETRIES:
+                    retry_count += 1
+                    logger.info(
+                        f"Nouvelle tentative dans 5 secondes... ({retry_count}/{MAX_RETRIES})"
+                    )
+                    time.sleep(5)
+                else:
+                    logger.error("Nombre maximum de tentatives atteint.")
+                    break
 
-            total_articles = session.run(
-                "MATCH (a:ARTICLE) RETURN count(a) as c"
-            ).single()["c"]
-            total_authors = session.run(
-                "MATCH (a:AUTHOR) RETURN count(a) as c"
-            ).single()["c"]
-
-            logger.info(f"N (Articles) : {total_articles}")
-            logger.info(f"K (Auteurs)  : {total_authors}")
-            logger.info(f"Total (N+K)  : {total_articles + total_authors} noeuds")
-            logger.info(
-                f"start_time : {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}"
-            )
-            logger.info(
-                f"end_time   : {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}"
-            )
-            logger.info(f"Temps de chargement total : {elapsed_time:.2f} secondes")
-            logger.info("===============================================")
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        logger.info("=============== INSERTION FINIS ===============")
+        total_articles = session.run("MATCH (a:ARTICLE) RETURN count(a) as c").single()[
+            "c"
+        ]
+        total_authors = session.run("MATCH (a:AUTHOR) RETURN count(a) as c").single()[
+            "c"
+        ]
+        logger.info(f"Nombre total de noeuds lu en streaming : {nodes_processed}")
+        logger.info(f"N (Articles) : {total_articles}")
+        logger.info(f"K (Auteurs)  : {total_authors}")
+        logger.info(f"Total (N+K)  : {total_articles + total_authors} noeuds")
+        logger.info(
+            f"start_time : {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))}"
+        )
+        logger.info(
+            f"end_time   : {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(end_time))}"
+        )
+        logger.info(f"Temps de chargement total : {elapsed_time:.2f} secondes")
+        logger.info("===============================================")
 
     driver.close()
 
