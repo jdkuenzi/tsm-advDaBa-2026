@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: kuenz-adv-daba-26-neo4j
+  namespace: kuenz-adv-daba-26
+spec:
+  serviceName: kuenz-adv-daba-26-neo4j-service
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kuenz-adv-daba-26-neo4j
+  template:
+    metadata:
+      labels:
+        app: kuenz-adv-daba-26-neo4j
+    spec:
+      containers:
+        - name: kuenz-adv-daba-26-neo4j
+          image: neo4j:4.4.15-community
+          ports:
+            - containerPort: 7474
+            - containerPort: 7687
+          envFrom:
+            - secretRef:
+                name: kuenz-adv-daba-26-secrets
+          volumeMounts:
+            - name: neo4j-storage
+              mountPath: /data
+              subPath: data
+            - name: neo4j-storage
+              mountPath: /logs
+              subPath: logs
+            - name: neo4j-storage
+              mountPath: /conf
+              subPath: conf
+      volumes:
+        - name: neo4j-storage
+          persistentVolumeClaim:
+            claimName: kuenz-adv-daba-26-neo4j-pvc

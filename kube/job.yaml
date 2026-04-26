@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kuenz-adv-daba-26-insert-job
+  namespace: kuenz-adv-daba-26
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: kuenz-adv-daba-26-neo4jtp
+          image: jdkuenzi/neo4jtp:latest
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: kuenz-adv-daba-26-config
+            - secretRef:
+                name: kuenz-adv-daba-26-secrets
