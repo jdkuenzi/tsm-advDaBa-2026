@@ -47,6 +47,12 @@ Le flag `-w` signifie "watch" (surveiller les changements en temps réel).
 
 ## Résumé complet en une seule commande
 
+Pour supprimer tout l'existant :
+
+```bash
+kubectl delete -f .
+```
+
 Pour déployer tout d'un coup :
 
 ```bash

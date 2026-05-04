@@ -28,7 +28,7 @@ Application pour charger et analyser le réseau de citations DBLP dans une base 
 
 - Docker et Docker Compose installés
 - Build l'image docker en local ou pull `jdkuenzi/neo4jtp:latest`
-- Database must be empty (clear all nodes and relations)
+- La base de données doit être vide (supprimer tous les noeuds et les relations)
 
 ### Étapes
 

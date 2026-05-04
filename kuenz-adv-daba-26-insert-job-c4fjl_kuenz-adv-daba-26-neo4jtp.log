@@ -1,0 +1,80 @@
+2026-05-04 16:23:24 - INFO - ========== VARIABLES D'ENVIRONNEMENT ==========
+2026-05-04 16:23:24 - INFO - NEO4J_IP    : kuenz-adv-daba-26-neo4j-service
+2026-05-04 16:23:24 - INFO - JSON_URL    : http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl
+2026-05-04 16:23:24 - INFO - MAX_NODES   : 10000000
+2026-05-04 16:23:24 - INFO - MAX_RETRIES : 10
+2026-05-04 16:23:24 - INFO - BATCH_SIZE  : 1000
+2026-05-04 16:23:24 - INFO - CHUNK_SIZE  : 100
+2026-05-04 16:23:24 - INFO - LOG_LEVEL   : INFO
+2026-05-04 16:23:24 - INFO - LOG_INTERVAL: 100000
+2026-05-04 16:23:24 - INFO - ===============================================
+2026-05-04 16:23:24 - INFO - Connexion à Neo4j sur kuenz-adv-daba-26-neo4j-service...
+2026-05-04 16:23:24 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:29 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:34 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:39 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:44 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:49 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:54 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:23:59 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:24:04 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:24:09 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:24:15 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:24:20 - WARNING - Neo4j n'est pas encore prêt. Nouvelle tentative dans 5s...
+2026-05-04 16:24:25 - INFO - Connexion établie avec succès !
+2026-05-04 16:24:25 - INFO - Création des contraintes d'unicité...
+2026-05-04 16:24:31 - INFO - Streaming depuis : http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl
+2026-05-04 16:28:05 - INFO - Progression : 100000 articles streamés et insérés | Vitesse : 467.60 art/s
+2026-05-04 16:31:21 - INFO - Progression : 200000 articles streamés et insérés | Vitesse : 508.46 art/s
+2026-05-04 16:34:43 - INFO - Progression : 300000 articles streamés et insérés | Vitesse : 495.28 art/s
+2026-05-04 16:37:56 - INFO - Progression : 400000 articles streamés et insérés | Vitesse : 518.63 art/s
+2026-05-04 16:41:11 - INFO - Progression : 500000 articles streamés et insérés | Vitesse : 513.88 art/s
+2026-05-04 16:44:40 - INFO - Progression : 600000 articles streamés et insérés | Vitesse : 478.93 art/s
+2026-05-04 16:48:01 - INFO - Progression : 700000 articles streamés et insérés | Vitesse : 496.85 art/s
+2026-05-04 16:51:23 - INFO - Progression : 800000 articles streamés et insérés | Vitesse : 495.72 art/s
+2026-05-04 16:54:42 - INFO - Progression : 900000 articles streamés et insérés | Vitesse : 500.88 art/s
+2026-05-04 16:58:25 - INFO - Progression : 1000000 articles streamés et insérés | Vitesse : 449.15 art/s
+2026-05-04 17:01:49 - INFO - Progression : 1100000 articles streamés et insérés | Vitesse : 489.55 art/s
+2026-05-04 17:05:13 - INFO - Progression : 1200000 articles streamés et insérés | Vitesse : 490.74 art/s
+2026-05-04 17:08:39 - INFO - Progression : 1300000 articles streamés et insérés | Vitesse : 484.96 art/s
+2026-05-04 17:12:20 - INFO - Progression : 1400000 articles streamés et insérés | Vitesse : 452.76 art/s
+2026-05-04 17:30:57 - INFO - Progression : 1500000 articles streamés et insérés | Vitesse : 89.52 art/s
+2026-05-04 17:53:09 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(3653939742 bytes read, 12290375348 more expected)', IncompleteRead(3653939742 bytes read, 12290375348 more expected)).
+2026-05-04 17:53:09 - INFO - Nouvelle tentative dans 5 secondes... (1/10)
+2026-05-04 17:53:14 - INFO - Reprise du flux : on ignore les 1542000 premiers noeuds (3652001766 bytes).
+2026-05-04 17:54:22 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(3428970 bytes read, 12288884354 more expected)', IncompleteRead(3428970 bytes read, 12288884354 more expected)).
+2026-05-04 17:54:22 - INFO - Nouvelle tentative dans 5 secondes... (2/10)
+2026-05-04 17:54:27 - INFO - Reprise du flux : on ignore les 1543000 premiers noeuds (3654371125 bytes).
+2026-05-04 17:59:18 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(12577482 bytes read, 12277366483 more expected)', IncompleteRead(12577482 bytes read, 12277366483 more expected)).
+2026-05-04 17:59:18 - INFO - Nouvelle tentative dans 5 secondes... (3/10)
+2026-05-04 17:59:23 - INFO - Reprise du flux : on ignore les 1548000 premiers noeuds (3665824467 bytes).
+2026-05-04 18:00:34 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(3217872 bytes read, 12275272751 more expected)', IncompleteRead(3217872 bytes read, 12275272751 more expected)).
+2026-05-04 18:00:34 - INFO - Nouvelle tentative dans 5 secondes... (4/10)
+2026-05-04 18:00:39 - INFO - Reprise du flux : on ignore les 1549000 premiers noeuds (3668584909 bytes).
+2026-05-04 18:16:07 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(48499092 bytes read, 12227231089 more expected)', IncompleteRead(48499092 bytes read, 12227231089 more expected)).
+2026-05-04 18:16:07 - INFO - Nouvelle tentative dans 5 secondes... (5/10)
+2026-05-04 18:16:12 - INFO - Reprise du flux : on ignore les 1569000 premiers noeuds (3715534466 bytes).
+2026-05-04 18:17:38 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(3475104 bytes read, 12225305520 more expected)', IncompleteRead(3475104 bytes read, 12225305520 more expected)).
+2026-05-04 18:17:38 - INFO - Nouvelle tentative dans 5 secondes... (6/10)
+2026-05-04 18:17:43 - INFO - Reprise du flux : on ignore les 1570000 premiers noeuds (3718297242 bytes).
+2026-05-04 18:18:55 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(3676416 bytes read, 12222341432 more expected)', IncompleteRead(3676416 bytes read, 12222341432 more expected)).
+2026-05-04 18:18:55 - INFO - Nouvelle tentative dans 5 secondes... (7/10)
+2026-05-04 18:19:00 - INFO - Reprise du flux : on ignore les 1571000 premiers noeuds (3720879365 bytes).
+2026-05-04 18:23:50 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(12288096 bytes read, 12211147629 more expected)', IncompleteRead(12288096 bytes read, 12211147629 more expected)).
+2026-05-04 18:23:50 - INFO - Nouvelle tentative dans 5 secondes... (8/10)
+2026-05-04 18:23:55 - INFO - Reprise du flux : on ignore les 1576000 premiers noeuds (3732041307 bytes).
+2026-05-04 18:24:58 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(3679212 bytes read, 12208594571 more expected)', IncompleteRead(3679212 bytes read, 12208594571 more expected)).
+2026-05-04 18:24:58 - INFO - Nouvelle tentative dans 5 secondes... (9/10)
+2026-05-04 18:25:03 - INFO - Reprise du flux : on ignore les 1577000 premiers noeuds (3734816332 bytes).
+2026-05-04 18:41:36 - WARNING - Coupure réseau détectée : ('Connection broken: IncompleteRead(50867304 bytes read, 12158631454 more expected)', IncompleteRead(50867304 bytes read, 12158631454 more expected)).
+2026-05-04 18:41:36 - ERROR - Nombre maximum de tentatives atteint (10/10)
+2026-05-04 18:41:36 - INFO - =============== INSERTION FINIS ===============
+2026-05-04 18:41:36 - INFO - Nombre total de noeuds lu en streaming : 1598000
+2026-05-04 18:41:36 - INFO - Vitesse moyenne : 194.29 art/s
+2026-05-04 18:41:36 - INFO - N (Articles) : 3874227
+2026-05-04 18:41:36 - INFO - K (Auteurs)  : 1648435
+2026-05-04 18:41:36 - INFO - Total (N+K)  : 5522662 noeuds
+2026-05-04 18:41:36 - INFO - start_time : 2026-05-04 16:24:31
+2026-05-04 18:41:36 - INFO - end_time   : 2026-05-04 18:41:36
+2026-05-04 18:41:36 - INFO - Temps de chargement total : 8224.87 secondes
+2026-05-04 18:41:36 - INFO - ===============================================
