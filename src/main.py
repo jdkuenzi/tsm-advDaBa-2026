@@ -119,7 +119,7 @@ def stream_articles(url, byte_offset, max_nodes):
     if byte_offset > 0:
         headers["Range"] = f"bytes={byte_offset}-"
 
-    with requests.get(url, headers=headers, stream=True, timeout=(60, 600)) as response:
+    with requests.get(url, headers=headers, stream=True, timeout=(30, 120)) as response:
         response.raise_for_status()
 
         current_byte = byte_offset
@@ -153,14 +153,14 @@ def stream_articles(url, byte_offset, max_nodes):
 
 def main():
     logger.info("========== VARIABLES D'ENVIRONNEMENT ==========")
-    logger.info(f"NEO4J_IP   : {NEO4J_IP}")
-    logger.info(f"JSON_URL   : {JSON_URL}")
-    logger.info(f"MAX_NODES  : {MAX_NODES}")
-    logger.info(f"BATCH_SIZE : {BATCH_SIZE}")
-    logger.info(f"CHUNK_SIZE : {CHUNK_SIZE}")
-    logger.info(f"LOG_LEVEL  : {LOG_LEVEL}")
-    logger.info(f"LOG_INTERVAL: {LOG_INTERVAL}")
+    logger.info(f"NEO4J_IP    : {NEO4J_IP}")
+    logger.info(f"JSON_URL    : {JSON_URL}")
+    logger.info(f"MAX_NODES   : {MAX_NODES}")
     logger.info(f"MAX_RETRIES : {MAX_RETRIES}")
+    logger.info(f"BATCH_SIZE  : {BATCH_SIZE}")
+    logger.info(f"CHUNK_SIZE  : {CHUNK_SIZE}")
+    logger.info(f"LOG_LEVEL   : {LOG_LEVEL}")
+    logger.info(f"LOG_INTERVAL: {LOG_INTERVAL}")
     logger.info("===============================================")
 
     neo4j_cred = NEO4J_AUTH.split("/")
@@ -178,6 +178,7 @@ def main():
     last_log_count = 0
     current_byte_offset = 0
     start_time = time.time()
+    retry_count = 0
 
     with driver.session() as session:
         logger.info(f"Streaming depuis : {JSON_URL}")
@@ -193,7 +194,6 @@ def main():
                     JSON_URL, current_byte_offset, MAX_NODES - nodes_processed
                 )
                 for batch_tuple in batched(article_stream, BATCH_SIZE):
-                    retry_count = 0
                     batch = [item[0] for item in batch_tuple]
 
                     session.execute_write(insert_batch, batch)
@@ -229,7 +229,9 @@ def main():
                     )
                     time.sleep(5)
                 else:
-                    logger.error("Nombre maximum de tentatives atteint.")
+                    logger.error(
+                        f"Nombre maximum de tentatives atteint ({retry_count}/{MAX_RETRIES})"
+                    )
                     break
 
         end_time = time.time()
