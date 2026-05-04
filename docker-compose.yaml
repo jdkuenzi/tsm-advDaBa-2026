@@ -13,6 +13,7 @@ services:
       - $PWD/neo4j_mount/conf:/conf
     environment:
       - NEO4J_AUTH=neo4j/test
+      - NEO4J_dbms_memory_pagecache_size=1536m
     deploy:
       resources:
         limits:
@@ -27,11 +28,12 @@ services:
       - internal
     environment:
       - JSON_URL=http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl
-      - MAX_NODES=1000000
+      - MAX_NODES=1700000
       - NEO4J_IP=172.24.0.10 # must be the same as above
       - NEO4J_AUTH=neo4j/test # must be the same as above
-      - BATCH_SIZE=5000
-      - LOG_INTERVAL=200000
+      - BATCH_SIZE=1000
+      - CHUNK_SIZE=1000
+      - LOG_INTERVAL=100000
       - LOG_LEVEL=INFO
     deploy:
       resources:

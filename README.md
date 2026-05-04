@@ -28,6 +28,7 @@ Application pour charger et analyser le réseau de citations DBLP dans une base 
 
 - Docker et Docker Compose installés
 - Build l'image docker en local ou pull `jdkuenzi/neo4jtp:latest`
+- Database must be empty (clear all nodes and relations)
 
 ### Étapes
 
@@ -84,7 +85,8 @@ Les variables d'environnement principales (dans `docker-compose.yaml` et `kube/c
 | `JSON_URL` | URL du fichier de données | [test.jsonl](http://vmrum.isc.heia-fr.ch/files/test.jsonl) |
 | `MAX_RETRIES` | Nombre max de tentative successive pour se connecter au flux | `5` |
 | `MAX_NODES` | Nombre max de noeuds à charger | `1000` |
-| `BATCH_SIZE` | Taille des batch | `1000` |
+| `BATCH_SIZE` | Taille des batch pour le stream | `1000` |
+| `CHUNK_SIZE` | Taille des insertion en base pour les auteurs et citations | `1000` |
 | `LOG_INTERVAL` | Interval entre les logs de progression | `1000` |
 | `LOG_LEVEL` | Niveau de log | `INFO` |
 
