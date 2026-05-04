@@ -6,8 +6,9 @@ metadata:
 data:
   TZ: "Europe/Zurich"
   JSON_URL: "http://vmrum.isc.heia-fr.ch/files/DBLP-Citation-network-V18.jsonl"
-  MAX_NODES: "10000000"
+  MAX_NODES: "1700000"
   NEO4J_IP: "kuenz-adv-daba-26-neo4j-service"
-  BATCH_SIZE: "5000"
-  LOG_INTERVAL: "500000"
+  BATCH_SIZE: "1000"
+  CHUNK_SIZE: "1000"
+  LOG_INTERVAL: "100000"
   LOG_LEVEL: "INFO"

@@ -23,6 +23,9 @@ spec:
           envFrom:
             - secretRef:
                 name: kuenz-adv-daba-26-secrets
+          env:
+            - name: NEO4J_dbms_memory_pagecache_size
+              value: "1536m"
           volumeMounts:
             - name: neo4j-storage
               mountPath: /data
